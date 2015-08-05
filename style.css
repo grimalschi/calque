@@ -82,6 +82,11 @@ body {
 
 .info h1 {
     margin-top: 0;
+    margin-bottom: 0px;
+}
+
+.info h2 {
+    margin-bottom: 0px;
 }
 
 .info hr {
