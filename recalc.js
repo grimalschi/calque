@@ -52,7 +52,7 @@ function recalc() {
     }
 
     input.forEach(function (line, index) {
-        if (line === '' || line[0] === '#') {
+        if (line.trim() === '') {
             output.push({
                 type: 'empty',
             });
@@ -99,7 +99,7 @@ function recalc() {
             for (var s = 0; s <= line.length; s++) spaces += ' ';
             outputEl.innerHTML += '<div class="value">' + spaces + comment + line.value + '</div>';
         } else if (line.type === 'function') {
-            var comment = '<span class="comment"> fn</span>';
+            var comment = '<span class="comment">fn</span>';
             var spaces = '';
             for (var s = 0; s <= line.length; s++) spaces += ' ';
             outputEl.innerHTML += '<div class="function">' + spaces + comment + '</div>';
