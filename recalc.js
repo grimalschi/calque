@@ -30,6 +30,8 @@ window.onload = function () {
     inputEl.onscroll = function () {
         outputEl.scrollTop = inputEl.scrollTop;
     };
+
+    inputEl.select();
 }
 
 function recalc() {
