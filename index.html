@@ -13,10 +13,17 @@
             var outputEl = document.getElementById('output');
 
             var oldValue = null;
+            var oldSelectionStart = null;
             var handler = function () {
-                var newValue = inputEl.value
+                var newValue = inputEl.value;
                 if (newValue !== oldValue) {
                     oldValue = newValue;
+                    setTimeout(recalc, 0);
+                }
+
+                var newSelectionStart = inputEl.selectionStart;
+                if (newSelectionStart !== oldSelectionStart) {
+                    oldSelectionStart = newSelectionStart;
                     setTimeout(recalc, 0);
                 }
 

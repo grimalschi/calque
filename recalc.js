@@ -5,7 +5,19 @@ function recalc() {
     var inputEl = document.getElementById('input');
     var input = inputEl.value.split("\n");
 
-    input.forEach(function (line) {
+
+    if (input.length === 1) {
+        var selectedLine = 1;
+    } else {
+        var match = inputEl.value.substr(0, inputEl.selectionStart).match(/\n/g);
+        if (!match) {
+            var selectedLine = 1;
+        } else {
+            var selectedLine = inputEl.value.substr(0, inputEl.selectionStart).match(/\n/g).length + 1;
+        }
+    }
+
+    input.forEach(function (line, index) {
         if (line === '' || line[0] === '#') {
             output.push({
                 type: 'empty',
@@ -20,6 +32,7 @@ function recalc() {
                     type: 'error',
                     length: length,
                     value: e,
+                    mute: index + 1 === selectedLine,
                 });
                 return;
             }
@@ -57,10 +70,14 @@ function recalc() {
             for (var s = 0; s <= line.length; s++) spaces += ' ';
             outputEl.innerHTML += '<div class="function">' + spaces + comment + '</div>';
         } else if (line.type === 'error') {
-            var comment = '<span class="comment">// </span>';
-            var spaces = '';
-            for (var s = 0; s <= line.length; s++) spaces += ' ';
-            outputEl.innerHTML += '<div class="error">' + spaces + comment + line.value + '</div>';
+            if (line.mute) {
+                outputEl.innerHTML += '<div class="clear">&nbsp;</div>';
+            } else {
+                var comment = '<span class="comment">// </span>';
+                var spaces = '';
+                for (var s = 0; s <= line.length; s++) spaces += ' ';
+                outputEl.innerHTML += '<div class="error">' + spaces + comment + line.value + '</div>';
+            }
         }
     });
 }
