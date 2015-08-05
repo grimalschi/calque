@@ -1,3 +1,37 @@
+window.onload = function () {
+    var inputEl = document.getElementById('input');
+    var outputEl = document.getElementById('output');
+
+    var oldValue = null;
+    var oldSelectionStart = null;
+    var handler = function () {
+        var newValue = inputEl.value;
+        if (newValue !== oldValue) {
+            oldValue = newValue;
+            setTimeout(recalc, 0);
+        }
+
+        var newSelectionStart = inputEl.selectionStart;
+        if (newSelectionStart !== oldSelectionStart) {
+            oldSelectionStart = newSelectionStart;
+            setTimeout(recalc, 0);
+        }
+
+        if (input.scrollTop !== output.scrollTop) {
+            output.scrollTop = input.scrollTop;
+        }
+    };
+
+    inputEl.onkeydown = handler;
+    inputEl.onkeyup = handler;
+    setInterval(handler, 50);
+
+    outputEl.scrollTop = inputEl.scrollTop;
+    inputEl.onscroll = function () {
+        outputEl.scrollTop = inputEl.scrollTop;
+    };
+}
+
 function recalc() {
     var scope = {};
     var output = [];
