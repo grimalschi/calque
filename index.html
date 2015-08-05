@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calque</title>
+
+    <link rel="stylesheet" href="style.css">
+    <script src="math.min.js"></script>
+    <script src="recalc.js"></script>
+    <script>
+        window.onload = function () {
+            var inputEl = document.getElementById('input');
+            var outputEl = document.getElementById('output');
+
+            var oldValue = null;
+            var handler = function () {
+                var newValue = inputEl.value
+                if (newValue !== oldValue) {
+                    oldValue = newValue;
+                    setTimeout(recalc, 0);
+                }
+
+                if (input.scrollTop !== output.scrollTop) {
+                    output.scrollTop = input.scrollTop;
+                }
+            };
+
+            inputEl.onkeydown = handler;
+            inputEl.onkeyup = handler;
+            setInterval(handler, 50);
+
+            outputEl.scrollTop = inputEl.scrollTop;
+            inputEl.onscroll = function () {
+                outputEl.scrollTop = inputEl.scrollTop;
+            };
+        }
+    </script>
+</head>
+<body>
+    <div class="interface">
+        <div class="output" id="output"></div>
+        <textarea class="input" id="input"></textarea>
+    </div>
+    <div class="info">
+        <h1>Calque</h1>
+
+        <hr>
+
+        <h2>Expressions</h2>
+        <pre data-result="5">sqrt(3^2 + 4^2)</pre>
+        <pre data-result="2i">sqrt(-4)</pre>
+        <pre data-result="5.08 cm">2 inch to cm</pre>
+        <pre data-result="0.70711">cos(45 deg)</pre>
+
+        <h2>Variables</h2>
+        <pre data-result="6">a = 2 + 2 * 2</pre>
+        <pre data-result="5">b = a - 1</pre>
+        <pre data-result="30">a * b</pre>
+
+        <h2>Functions</h2>
+        <pre data-result="pow2(x)">pow2(x) = x ^ 2</pre>
+        <pre data-result="36">pow2(6)</pre>
+
+        <hr>
+
+        <p>Using <a href="https://github.com/josdejong/mathjs">math.js</a>.</p>
+    </div>
+</body>
+</html>
