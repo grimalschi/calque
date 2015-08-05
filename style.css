@@ -90,6 +90,6 @@ body {
 }
 
 .info pre:after {
-    content: '  // ' attr(data-result);
+    content: attr(data-result);
     color: grey;
 }
