@@ -7,7 +7,15 @@
     <link rel="stylesheet" href="style.css">
     <script src="math.min.js"></script>
     <script src="lodash.min.js"></script>
-    <script src="recalc.js"></script>
+    <script src="calque.js"></script>
+    <script>
+        window.onload = function () {
+            var input = document.getElementById('input');
+            var output = document.getElementById('output');
+            window.calque = new Calque(input, output);
+            input.select();
+        }
+    </script>
 </head>
 <body>
     <div class="interface">
