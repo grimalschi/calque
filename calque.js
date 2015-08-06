@@ -133,7 +133,7 @@
             if (type === 'empty') prefix += ' ';
             if (type === 'result') {
                 if (expression.result instanceof Function) {
-                    prefix += 'fn ';
+                    prefix += 'fn';
                 } else {
                     prefix += '= ';
                 }
@@ -146,7 +146,7 @@
                     data = 'null';
                 } else if (expression.result instanceof Function) {
                     var source = expression.result.toString();
-                    data = source.substring(9, source.indexOf('{') - 1);
+                    data = '';
                 } else {
                     data = expression.result.toString();
                 }
