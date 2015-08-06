@@ -30,6 +30,7 @@ body {
     padding-bottom: 0;
     box-sizing: border-box;
     white-space: pre;
+    word-wrap: break-word;
 }
 
 .interface .input {
