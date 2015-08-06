@@ -50,7 +50,7 @@ body {
 
 .interface .output .prefix:before {
     content: attr(data-prefix);
-    color: grey;
+    color: lightgrey;
 }
 
 .interface .output .data {
@@ -63,7 +63,7 @@ body {
 }
 
 .interface .output .result {
-    color: grey;
+    color: silver;
 }
 
 .interface .output .error {
