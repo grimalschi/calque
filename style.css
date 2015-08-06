@@ -48,8 +48,14 @@ body {
     display: block;
 }
 
-.interface .output .comment {
-    color: silver;
+.interface .output .prefix:before {
+    content: attr(data-prefix);
+    color: grey;
+}
+
+.interface .output .data {
+    z-index: 1;
+    position: relative;
 }
 
 .interface .output .empty {

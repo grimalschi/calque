@@ -128,20 +128,20 @@
                 var type = 'result';
             }
 
-            var comment = '';
-            for (var s = 0; s <= expression.code.length; s++) comment += ' ';
-            if (type === 'empty') comment += ' ';
-            if (type === 'result') comment += '= ';
-            if (type === 'function') comment += 'fn';
-            if (type === 'error') comment += '// ';
+            var prefix = '';
+            for (var s = 0; s <= expression.code.length; s++) prefix += ' ';
+            if (type === 'empty') prefix += ' ';
+            if (type === 'result') prefix += '= ';
+            if (type === 'function') prefix += 'fn';
+            if (type === 'error') prefix += '// ';
 
             var data = '';
             if (type === 'result') data = expression.result.toString();
             if (type === 'error') data = expression.error;
 
             var lineHtml = '<div class="' + type + '">';
-            lineHtml += '<span class="comment">' + comment + '</span>';
-            lineHtml += data;
+            lineHtml += '<span class="prefix" data-prefix="' + prefix + '"></span>';
+            lineHtml += '<span class="data">' + data + '</span>';
             lineHtml += '</div>';
 
             html += lineHtml;
