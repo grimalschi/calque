@@ -75,7 +75,9 @@
             expression.line = null;
         });
 
-        var scope = {};
+        var scope = {
+            last: null
+        };
 
         this.lines.forEach(function (code, index) {
             var oldSimilarExpressions = this.expressions.filter(function (expression) {
@@ -97,7 +99,12 @@
                 this.expressions.push(expression);
             }
 
-            scope = scopeClone(expression.scopeOutput)
+            scope = scopeClone(expression.scopeOutput);
+
+            if (expression.result !== undefined) {
+                scope.last = expression.result;
+            }
+
             expression.line = index;
         }.bind(this));
 
@@ -122,8 +129,6 @@
                 }
             } else if (expression.result === undefined) {
                 var type = 'empty';
-            } else if (expression.result.substr(0, 8) === 'function') {
-                var type = 'function';
             } else {
                 var type = 'result';
             }
@@ -131,12 +136,26 @@
             var prefix = '';
             for (var s = 0; s <= expression.code.length; s++) prefix += ' ';
             if (type === 'empty') prefix += ' ';
-            if (type === 'result') prefix += '= ';
-            if (type === 'function') prefix += 'fn';
+            if (type === 'result') {
+                if (expression.result instanceof Function) {
+                    prefix += 'fn ';
+                } else {
+                    prefix += '= ';
+                }
+            }
             if (type === 'error') prefix += '// ';
 
             var data = '';
-            if (type === 'result') data = expression.result.toString();
+            if (type === 'result') {
+                if (expression.result === null) {
+                    data = 'null';
+                } else if (expression.result instanceof Function) {
+                    var source = expression.result.toString();
+                    data = source.substring(9, source.indexOf('{') - 1);
+                } else {
+                    data = expression.result.toString();
+                }
+            };
             if (type === 'error') data = expression.error;
 
             var lineHtml = '<div class="' + type + '">';
@@ -181,13 +200,6 @@
 
         try {
             this.result = this.parse.eval(this.scopeOutput);
-            if (this.result !== undefined) {
-                if (this.result === null) {
-                    this.result = 'null';
-                } else {
-                    this.result = this.result.toString();
-                }
-            }
             this.error = null;
         } catch (e) {
             this.result = null;

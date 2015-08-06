@@ -62,10 +62,6 @@ body {
     visibility: hidden;
 }
 
-.interface .output .function {
-    color: grey;
-}
-
 .interface .output .result {
     color: grey;
 }
