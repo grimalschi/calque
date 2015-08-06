@@ -54,39 +54,40 @@ function recalc() {
     }
 
     input.forEach(function (line, index) {
-        if (line.trim() === '') {
-            output.push({
-                type: 'empty',
-            });
-        } else {
-            var length = line.length;
+        var length = line.length;
 
-            try {
-                var value = math.eval(line, scope).toString();
-            } catch (e) {
+        try {
+            var value = math.eval(line, scope);
+            if (value === undefined) {
                 output.push({
-                    type: 'error',
-                    length: length,
-                    value: e,
-                    mute: index + 1 === selectedLine,
+                    type: 'empty',
                 });
                 return;
             }
+            value = value.toString();
+        } catch (e) {
+            output.push({
+                type: 'error',
+                length: length,
+                value: e,
+                mute: index + 1 === selectedLine,
+            });
+            return;
+        }
 
-            if (value.substr(0, 8) === 'function') {
-                value = value.substring(9, value.indexOf('{') - 1);
-                output.push({
-                    type: 'function',
-                    length: length,
-                    value: value,
-                });
-            } else {
-                output.push({
-                    type: 'value',
-                    length: length,
-                    value: value,
-                });
-            }
+        if (value.substr(0, 8) === 'function') {
+            value = value.substring(9, value.indexOf('{') - 1);
+            output.push({
+                type: 'function',
+                length: length,
+                value: value,
+            });
+        } else {
+            output.push({
+                type: 'value',
+                length: length,
+                value: value,
+            });
         }
     });
 
