@@ -88,12 +88,7 @@
 
             if (oldSimilarExpressions.length) {
                 var expression = oldSimilarExpressions[0];
-
-                if (expression.checkDependencies(scope)) {
-                    expression.eval(scope);
-                } else {
-                    expression.updateScope(scope);
-                }
+                expression.eval(scope);
             } else {
                 var expression = new Expression(code, scope);
                 this.expressions.push(expression);
@@ -206,23 +201,6 @@
             this.error = e;
         }
     };
-
-    Expression.prototype.updateScope = function (scope) {
-        _.extend(this.scopeOutput, scope);
-    };
-
-    Expression.prototype.checkDependencies = function (scope) {
-        var changed = false;
-
-        _.each(this.dependencies, function (name) {
-            if (!_.isEqual(this.scopeOutput[name], scope[name])) {
-                changed = true;
-                return false;
-            }
-        }, this);
-
-        return changed;
-    }
 
     window.Calque = Calque;
 })();
