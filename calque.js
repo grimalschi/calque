@@ -181,7 +181,13 @@
 
         try {
             this.result = this.parse.eval(this.scopeOutput);
-            if (this.result !== undefined) this.result = this.result.toString();
+            if (this.result !== undefined) {
+                if (this.result === null) {
+                    this.result = 'null';
+                } else {
+                    this.result = this.result.toString();
+                }
+            }
             this.error = null;
         } catch (e) {
             this.result = null;
