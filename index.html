@@ -10,9 +10,13 @@
     <script src="calque.js"></script>
     <script>
         window.onload = function () {
-            var input = document.getElementById('input');
-            var output = document.getElementById('output');
+            var input = document.getElementById('input'),
+                output = document.getElementById('output'),
+                saveFileBtn = document.getElementById('save-file-btn'),
+                openFileBtn = document.getElementById('open-file-btn');
+
             window.calque = new Calque(input, output);
+            calque.facilitySaveOpen(saveFileBtn, openFileBtn);
             input.select();
         }
     </script>
@@ -21,6 +25,10 @@
     <div class="interface">
         <div class="output" id="output"></div>
         <textarea class="input" id="input"></textarea>
+    </div>
+    <div class="file-interface">
+    	<span class="small-btn" id="save-file-btn">Save (ctrl + enter)</span>
+    	<span class="small-btn" id="open-file-btn">Open (shift + enter)</span>
     </div>
     <div class="info">
         <h1>Calque</h1>

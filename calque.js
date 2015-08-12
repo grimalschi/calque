@@ -22,6 +22,35 @@
         this.expressions = [];
         this.activeLine = 0;
 
+        this.facilitySaveOpen = function (saveFileBtn, openFileBtn) {
+            var openFileEl = document.createElement("INPUT");
+            openFileEl.type = "file";
+            openFileEl.onchange = Calque.readFile;
+
+            saveFileBtn.onclick = function () {
+                Calque.saveToFile(input.value);
+            };
+
+            openFileBtn.onclick = openFile;
+
+            window.addEventListener('keypress',
+                function (e) {
+                    if (e.ctrlKey && e.keyCode == 10) {
+                        Calque.saveToFile(input.value);
+                    }
+
+                    if (e.keyCode == 13 && e.shiftKey) {
+                        openFile();
+                    }
+                }
+            );
+
+            function openFile() {
+                openFileEl.value = "";
+                openFileEl.click();
+            }
+        }
+
         var handler = function () {
             this.updateActiveLine();
             this.input();
@@ -164,6 +193,43 @@
         this.outputEl.innerHTML = html;
     };
 
+    Calque.saveToFile = function (text) {
+        var textFileAsBlob = new Blob([text], {type:'text/plain'});
+        var fileNameToSaveAs ="calque.txt";
+        var downloadLink = document.createElement("a");
+        downloadLink.download = fileNameToSaveAs;
+        downloadLink.innerHTML = "Download File";
+
+        if (window.URL != null) {
+            downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+        }
+        else {
+            downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+
+            downloadLink.onclick = function (e) {
+                document.body.removeChild(event.target);
+            };
+            downloadLink.style.display = "none";
+
+            document.body.appendChild(downloadLink);
+        }
+
+        downloadLink.click();
+    };
+
+    Calque.readFile = function (e) {
+        var tgt = e.target || window.event.srcElement,
+        files = tgt.files,
+        fileReader;
+
+        if (FileReader && files && files.length) {
+            var fileReader = new FileReader();
+            fileReader.onload = function (event) {
+                calque.inputEl.value = fileReader.result;
+            }
+            fileReader.readAsText(files[0], "UTF-8");
+        }
+    };
 
     function Expression(code, scope) {
         this.code = code;
