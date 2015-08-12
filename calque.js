@@ -23,12 +23,12 @@
         this.activeLine = 0;
 
         this.facilitySaveOpen = function (saveFileBtn, openFileBtn) {
-            var openFileEl = document.createElement("INPUT");
+            var openFileEl = document.createElement("input");
             openFileEl.type = "file";
             openFileEl.onchange = Calque.readFile;
 
             saveFileBtn.onclick = function () {
-                Calque.saveToFile(input.value);
+                Calque.saveToFile(inputEl.value);
             };
 
             openFileBtn.onclick = openFile;
@@ -198,7 +198,6 @@
         var fileNameToSaveAs ="calque.txt";
         var downloadLink = document.createElement("a");
         downloadLink.download = fileNameToSaveAs;
-        downloadLink.innerHTML = "Download File";
 
         if (window.URL != null) {
             downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
