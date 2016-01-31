@@ -16,6 +16,7 @@
     function Calque(inputEl, outputEl) {
         this.inputEl = inputEl;
         this.outputEl = outputEl;
+        this.parentEl = inputEl.parentNode;
 
         this.raw = '';
         this.lines = [];
@@ -25,22 +26,19 @@
         var handler = function () {
             this.updateActiveLine();
             this.input();
-
-            if (this.inputEl.scrollTop !== this.outputEl.scrollTop) {
-                this.outputEl.scrollTop = this.inputEl.scrollTop;
-            }
+            this.inputEl.style.height = Math.max(
+                this.outputEl.clientHeight,
+                this.parentEl.clientHeight
+            ) + 'px';
         }.bind(this);
 
         handler();
 
-        inputEl.onkeydown = handler;
-        inputEl.onkeyup = handler;
+        this.inputEl.onkeydown = handler;
+        this.inputEl.onkeyup = handler;
         setInterval(handler, 50);
 
-        outputEl.scrollTop = inputEl.scrollTop;
-        inputEl.onscroll = function () {
-            outputEl.scrollTop = inputEl.scrollTop;
-        };
+        this.outputEl.scrollTop = this.inputEl.scrollTop;
     }
 
     Calque.prototype.updateActiveLine = function () {
