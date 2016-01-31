@@ -13,6 +13,18 @@
         return newScope;
     }
 
+    function translit(text){
+        return text.replace(/[а-яА-Я]/g, function (match) {
+            return '_x' + match.charCodeAt() + 'x_';
+        });
+    }
+
+    function detranslit(text) {
+        return text.replace(/_x(\d+)x_/g, function (match, code) {
+            return String.fromCharCode(code);
+        });
+    }
+
     function Calque(inputEl, outputEl) {
         this.inputEl = inputEl;
         this.outputEl = outputEl;
@@ -27,9 +39,9 @@
             this.updateActiveLine();
             this.input();
             this.inputEl.style.height = Math.max(
-                this.outputEl.clientHeight,
-                this.parentEl.clientHeight
-            ) + 'px';
+                    this.outputEl.clientHeight,
+                    this.parentEl.clientHeight
+                ) + 'px';
         }.bind(this);
 
         handler();
@@ -169,7 +181,7 @@
         this.scopeOutput = scopeClone(this.scopeInput);
 
         try {
-            this.parse = math.parse(code);
+            this.parse = math.parse(translit(code));
 
             this.dependencies = [];
             this.parse.traverse(function (node) {
@@ -196,7 +208,7 @@
             this.error = null;
         } catch (e) {
             this.result = null;
-            this.error = e;
+            this.error = detranslit(e.toString());
         }
     };
 
