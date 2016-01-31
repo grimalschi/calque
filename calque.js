@@ -71,18 +71,38 @@
 
         var spacevars = [];
 
+        var sums = [];
+
         var scope = {
             last: null
         };
 
         this.lines.forEach(function (code, index) {
-            var processed = code;
+            var expression = {
+                line: index,
+                code: code,
+                processed: code,
+                result: null,
+                error: null,
+            }
 
-            if (processed.indexOf('=') > 0) {
+            this.expressions.push(expression);
+
+            if (expression.code.substr(0, 2) === '  ') {
+                expression.tab = expression.code.match(/\s+/)[0].match(/\s{2}/g).length;
+            } else {
+                expression.tab = 0;
+            }
+
+            if (expression.code.trim() !== '' && expression.tab < sums.length) {
+                var closed = sums.splice(expression.tab);
+            }
+
+            if (expression.processed.indexOf('=') > 0) {
                 var names = [];
 
-                processed.split('=').slice(0, -1).forEach(function (part) {
-                    if (processed.indexOf('(') > 0) {
+                expression.processed.split('=').slice(0, -1).forEach(function (part) {
+                    if (expression.processed.indexOf('(') > 0) {
                         names.push(part.substr(0, part.indexOf('(')).trim());
                     } else {
                         names.push(part.trim());
@@ -90,39 +110,60 @@
                 });
 
                 names.forEach(function (name) {
-                    var spacevar = {
+                    spacevars.splice(0, 0, {
                         original: name,
                         replaced: name.replace(/ /g, '_'),
                         regexp: new RegExp(name, 'g')
-                    };
-
-                    spacevars.splice(0, 0, spacevar);
+                    });
                 });
             }
 
-            spacevars.forEach(function (spacevar) {
-                processed = processed.replace(spacevar.regexp, spacevar.replaced);
-            });
+            if (expression.processed.trim().slice(-1) === ':') {
+                var name = expression.processed.trim().slice(0, -1).trim();
+                expression.variable = name.replace(/ /g, '_');
 
-            processed = translit(processed);
+                spacevars.splice(0, 0, {
+                    original: name,
+                    replaced: name.replace(/ /g, '_'),
+                    regexp: new RegExp(name, 'g')
+                });
 
-            try {
-                var result = math.eval(processed, scope);
-                var error = null;
-            } catch (e) {
-                var result = null;
-                var error = detranslit(e.toString());
+                if (expression.tab === sums.length) {
+                    sums.push(expression);
+                } else {
+                    expression.error = 'Error: Unexpected indent';
+                }
+
+                expression.processed = name + ' = 0';
             }
 
-            this.expressions.push({
-                line: index,
-                code: code,
-                result: result,
-                error: error
+            spacevars.forEach(function (spacevar) {
+                expression.processed = expression.processed.replace(spacevar.regexp, spacevar.replaced);
             });
 
-            if (result !== undefined) {
-                scope.last = result;
+            expression.processed = translit(expression.processed);
+
+            try {
+                expression.result = math.eval(expression.processed, scope);
+            } catch (e) {
+                expression.error = detranslit(e.toString());
+            }
+
+            if (expression.result !== undefined) {
+                scope.last = expression.result;
+            }
+
+            if (sums.length && expression.result && !expression.error) {
+                sums.forEach(function (sum) {
+                    if (!sum.error) {
+                        try {
+                            sum.result = math.add(sum.result, expression.result);
+                            scope[sum.variable] = sum.result;
+                        } catch (e) {
+                            sum.error = 'Error: Sum can not be calculated';
+                        }
+                    }
+                });
             }
         }.bind(this));
 
@@ -145,13 +186,22 @@
                 }
             } else if (expression.result === undefined) {
                 var type = 'empty';
+
+                for (var i = index; i < this.lines.length; i++) {
+                    if (this.expressions[i].result !== undefined) {
+                        expression.tab = this.expressions[i].tab;
+                        break;
+                    }
+                }
             } else {
                 var type = 'result';
             }
 
             var prefix = '';
             for (var s = 0; s <= expression.code.length; s++) prefix += ' ';
-            if (type === 'empty') prefix += ' ';
+            if (type === 'empty') for (var t = 0; t <= expression.tab; t++) prefix += '  ';
+            for (var i = 0; i < expression.tab; i++) prefix = prefix.replace(/(\| )?  /, '$1| ');
+
             if (type === 'result') {
                 if (expression.result instanceof Function) {
                     prefix += 'fn';

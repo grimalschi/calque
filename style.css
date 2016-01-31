@@ -44,16 +44,12 @@ body {
 
 .interface .output .prefix:before {
     content: attr(data-prefix);
-    color: lightgrey;
+    color: #E9E9E9;
 }
 
 .interface .output .data {
     z-index: 1;
     position: relative;
-}
-
-.interface .output .empty {
-    visibility: hidden;
 }
 
 .interface .output .result {

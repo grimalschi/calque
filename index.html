@@ -12,25 +12,35 @@
             var input = document.getElementById('input');
             var output = document.getElementById('output');
             window.calque = new Calque(input, output);
-            input.select();
+            input.focus();
         }
     </script>
 </head>
 <body>
     <div class="interface">
         <div class="output" id="output"></div>
-        <textarea class="input" id="input"># Calque
+        <textarea class="input" id="input">## Calque
 
 # Expressions
+2 + 2 * 2
 sqrt(3^2 + 4^2)
-sqrt(-4)
 2 inch to cm
 cos(45 deg)
 
 # Variables
-a = 2 + 2 * 2
-b = a - 1
-a * b
+a = 25
+b = a * 2
+postal code = 1122
+
+# Expression trees
+animals:
+  cats = 2
+  dogs = 3
+plants:
+  trees = 20
+  vegetables:
+    potatos = 10
+    carrots = 10
 
 # Functions
 pow2(x) = x ^ 2
