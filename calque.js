@@ -1,18 +1,4 @@
 (function () {
-    function scopeClone(scope) {
-        var newScope = {};
-
-        _.each(scope, function (value, name) {
-            if (value instanceof Function) {
-                newScope[name] = value;
-            } else {
-                newScope[name] = math.clone(value);
-            }
-        });
-
-        return newScope;
-    }
-
     function translit(text){
         return text.replace(/[а-яА-Я]/g, function (match) {
             return '_x' + match.charCodeAt() + 'x_';
@@ -81,39 +67,32 @@
     }
 
     Calque.prototype.recalc = function () {
-        this.expressions.forEach(function (expression) {
-            expression.line = null;
-        });
+        this.expressions = [];
 
         var scope = {
             last: null
         };
 
         this.lines.forEach(function (code, index) {
-            var oldSimilarExpressions = this.expressions.filter(function (expression) {
-                if (expression.line !== null) return;
-                if (expression.code !== code) return;
-                return true;
+            try {
+                var result = math.eval(translit(code), scope);
+                var error = null;
+            } catch (e) {
+                var result = null;
+                var error = detranslit(e.toString());
+            }
+
+            this.expressions.push({
+                line: index,
+                code: code,
+                result: result,
+                error: error
             });
 
-            if (oldSimilarExpressions.length) {
-                var expression = oldSimilarExpressions[0];
-                expression.eval(scope);
-            } else {
-                var expression = new Expression(code, scope);
-                this.expressions.push(expression);
+            if (result !== undefined) {
+                scope.last = result;
             }
-
-            scope = scopeClone(expression.scopeOutput);
-
-            if (expression.result !== undefined) {
-                scope.last = expression.result;
-            }
-
-            expression.line = index;
         }.bind(this));
-
-        _.remove(this.expressions, { line: null });
 
         this.repaint();
     };
@@ -172,44 +151,6 @@
         }.bind(this));
 
         this.outputEl.innerHTML = html;
-    };
-
-
-    function Expression(code, scope) {
-        this.code = code;
-        this.scopeInput = scopeClone(scope);
-        this.scopeOutput = scopeClone(this.scopeInput);
-
-        try {
-            this.parse = math.parse(translit(code));
-
-            this.dependencies = [];
-            this.parse.traverse(function (node) {
-                if (node.isSymbolNode || node.isFunctionNode) {
-                    this.dependencies.push(node.name);
-                }
-            }.bind(this));
-
-            this.eval(scope);
-        } catch (e) {
-            this.result = null;
-            this.error = e;
-        }
-
-        this.line = null;
-    };
-
-    Expression.prototype.eval = function (scope) {
-        this.scopeInput = scopeClone(scope);
-        this.scopeOutput = scopeClone(this.scopeInput);
-
-        try {
-            this.result = this.parse.eval(this.scopeOutput);
-            this.error = null;
-        } catch (e) {
-            this.result = null;
-            this.error = detranslit(e.toString());
-        }
     };
 
     window.Calque = Calque;
