@@ -25,9 +25,9 @@
             this.updateActiveLine();
             this.input();
             this.inputEl.style.height = Math.max(
-                    this.outputEl.clientHeight,
-                    this.parentEl.clientHeight
-                ) + 'px';
+                this.outputEl.clientHeight,
+                this.parentEl.clientHeight
+            ) + 'px';
         }.bind(this);
 
         handler();
@@ -69,13 +69,45 @@
     Calque.prototype.recalc = function () {
         this.expressions = [];
 
+        var spacevars = [];
+
         var scope = {
             last: null
         };
 
         this.lines.forEach(function (code, index) {
+            var processed = code;
+
+            if (processed.indexOf('=') > 0) {
+                var names = [];
+
+                processed.split('=').slice(0, -1).forEach(function (part) {
+                    if (processed.indexOf('(') > 0) {
+                        names.push(part.substr(0, part.indexOf('(')).trim());
+                    } else {
+                        names.push(part.trim());
+                    }
+                });
+
+                names.forEach(function (name) {
+                    var spacevar = {
+                        original: name,
+                        replaced: name.replace(/ /g, '_'),
+                        regexp: new RegExp(name, 'g')
+                    };
+
+                    spacevars.splice(0, 0, spacevar);
+                });
+            }
+
+            spacevars.forEach(function (spacevar) {
+                processed = processed.replace(spacevar.regexp, spacevar.replaced);
+            });
+
+            processed = translit(processed);
+
             try {
-                var result = math.eval(translit(code), scope);
+                var result = math.eval(processed, scope);
                 var error = null;
             } catch (e) {
                 var result = null;
