@@ -158,7 +158,7 @@
                     if (!sum.error) {
                         try {
                             sum.result = math.add(sum.result, expression.result);
-                            scope[sum.variable] = sum.result;
+                            scope[translit(sum.variable)] = sum.result;
                         } catch (e) {
                             sum.error = 'Error: Sum can not be calculated';
                         }
