@@ -6,54 +6,52 @@
     <link rel="icon" type='image/png' href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <script src="math.min.js"></script>
-    <script src="lodash.min.js"></script>
     <script src="calque.js"></script>
     <script>
         window.onload = function () {
             var input = document.getElementById('input');
             var output = document.getElementById('output');
             window.calque = new Calque(input, output);
-            input.select();
+            input.focus();
         }
     </script>
 </head>
 <body>
     <div class="interface">
         <div class="output" id="output"></div>
-        <textarea class="input" id="input"></textarea>
-    </div>
-    <div class="info">
-        <h1>Calque</h1>
+        <textarea class="input" id="input">## Calque
 
-        <hr>
+# Expressions
+2 + 2 * 2
+sqrt(3^2 + 4^2)
+2 inch to cm
+cos(45 deg)
 
-        <h2>Expressions</h2>
-        <pre data-result=" = 5">sqrt(3^2 + 4^2)</pre>
-        <pre data-result=" = 2i">sqrt(-4)</pre>
-        <pre data-result=" = 5.08 cm">2 inch to cm</pre>
-        <pre data-result=" = 0.70711">cos(45 deg)</pre>
+# Variables
+a = 25
+b = a * 2
+postal code = 1122
 
-        <h2>Variables</h2>
-        <pre data-result=" = 6">a = 2 + 2 * 2</pre>
-        <pre data-result=" = 5">b = a - 1</pre>
-        <pre data-result=" = 30">a * b</pre>
+# Expression trees
+animals:
+  cats = 2
+  dogs = 3
+plants:
+  trees = 20
+  vegetables:
+    potatos = 10
+    carrots = 10
 
-        <h2>Functions</h2>
-        <pre data-result=" fn">pow2(x) = x ^ 2</pre>
-        <pre data-result=" = 36">pow2(6)</pre>
+# Functions
+pow2(x) = x ^ 2
+pow2(6)
 
-        <h2>Comments</h2>
-        <pre># This is a comment</pre>
-        <pre data-result=" = 4">a = 2 * 2 # And this</pre>
+# Last result
+2 * 2
+last + 1
 
-        <h2>Last result</h2>
-        <pre data-result=" = 4">2 * 2</pre>
-        <pre data-result=" = 5">last + 1</pre>
-
-        <hr>
-
-        <p>Using <a target="blank" href="https://github.com/josdejong/mathjs">math.js</a>.</p>
-        <p>View on <a target="blank" href="https://github.com/grimalschi/calque">GitHub</a>.</p>
+# Calque on GitHub: https://github.com/grimalschi/calque
+# Using Math.js: https://github.com/josdejong/mathjs</textarea>
     </div>
 </body>
 </html>

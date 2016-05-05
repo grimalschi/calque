@@ -1,21 +1,20 @@
 (function () {
-    function scopeClone(scope) {
-        var newScope = {};
-
-        _.each(scope, function (value, name) {
-            if (value instanceof Function) {
-                newScope[name] = value;
-            } else {
-                newScope[name] = math.clone(value);
-            }
+    function translit(text){
+        return text.replace(/[а-яА-Я]/g, function (match) {
+            return '_x' + match.charCodeAt() + 'x_';
         });
+    }
 
-        return newScope;
+    function detranslit(text) {
+        return text.replace(/_x(\d+)x_/g, function (match, code) {
+            return String.fromCharCode(code);
+        });
     }
 
     function Calque(inputEl, outputEl) {
         this.inputEl = inputEl;
         this.outputEl = outputEl;
+        this.parentEl = inputEl.parentNode;
 
         this.raw = '';
         this.lines = [];
@@ -25,22 +24,19 @@
         var handler = function () {
             this.updateActiveLine();
             this.input();
-
-            if (this.inputEl.scrollTop !== this.outputEl.scrollTop) {
-                this.outputEl.scrollTop = this.inputEl.scrollTop;
-            }
+            this.inputEl.style.height = Math.max(
+                this.outputEl.clientHeight,
+                this.parentEl.clientHeight
+            ) + 'px';
         }.bind(this);
 
         handler();
 
-        inputEl.onkeydown = handler;
-        inputEl.onkeyup = handler;
+        this.inputEl.onkeydown = handler;
+        this.inputEl.onkeyup = handler;
         setInterval(handler, 50);
 
-        outputEl.scrollTop = inputEl.scrollTop;
-        inputEl.onscroll = function () {
-            outputEl.scrollTop = inputEl.scrollTop;
-        };
+        this.outputEl.scrollTop = this.inputEl.scrollTop;
     }
 
     Calque.prototype.updateActiveLine = function () {
@@ -71,39 +67,105 @@
     }
 
     Calque.prototype.recalc = function () {
-        this.expressions.forEach(function (expression) {
-            expression.line = null;
-        });
+        this.expressions = [];
+
+        var spacevars = [];
+
+        var sums = [];
 
         var scope = {
             last: null
         };
 
         this.lines.forEach(function (code, index) {
-            var oldSimilarExpressions = this.expressions.filter(function (expression) {
-                if (expression.line !== null) return;
-                if (expression.code !== code) return;
-                return true;
-            });
-
-            if (oldSimilarExpressions.length) {
-                var expression = oldSimilarExpressions[0];
-                expression.eval(scope);
-            } else {
-                var expression = new Expression(code, scope);
-                this.expressions.push(expression);
+            var expression = {
+                line: index,
+                code: code,
+                processed: code,
+                result: null,
+                error: null,
             }
 
-            scope = scopeClone(expression.scopeOutput);
+            this.expressions.push(expression);
+
+            if (expression.code.substr(0, 2) === '  ') {
+                expression.tab = expression.code.match(/\s+/)[0].match(/\s{2}/g).length;
+            } else {
+                expression.tab = 0;
+            }
+
+            if (expression.code.trim() !== '' && expression.tab < sums.length) {
+                var closed = sums.splice(expression.tab);
+            }
+
+            if (expression.processed.indexOf('=') > 0) {
+                var names = [];
+
+                expression.processed.split('=').slice(0, -1).forEach(function (part) {
+                    if (expression.processed.indexOf('(') > 0) {
+                        names.push(part.substr(0, part.indexOf('(')).trim());
+                    } else {
+                        names.push(part.trim());
+                    }
+                });
+
+                names.forEach(function (name) {
+                    spacevars.splice(0, 0, {
+                        original: name,
+                        replaced: name.replace(/ /g, '_'),
+                        regexp: new RegExp(name, 'g')
+                    });
+                });
+            }
+
+            if (expression.processed.trim().slice(-1) === ':') {
+                var name = expression.processed.trim().slice(0, -1).trim();
+                expression.variable = name.replace(/ /g, '_');
+
+                spacevars.splice(0, 0, {
+                    original: name,
+                    replaced: name.replace(/ /g, '_'),
+                    regexp: new RegExp(name, 'g')
+                });
+
+                if (expression.tab === sums.length) {
+                    sums.push(expression);
+                } else {
+                    expression.error = 'Error: Unexpected indent';
+                }
+
+                expression.processed = name + ' = 0';
+            }
+
+            spacevars.forEach(function (spacevar) {
+                expression.processed = expression.processed.replace(spacevar.regexp, spacevar.replaced);
+            });
+
+            expression.processed = translit(expression.processed);
+
+            try {
+                expression.result = math.eval(expression.processed, scope);
+            } catch (e) {
+                expression.error = detranslit(e.toString());
+            }
 
             if (expression.result !== undefined) {
                 scope.last = expression.result;
             }
 
-            expression.line = index;
+            if (sums.length && expression.result && !expression.error) {
+                sums.forEach(function (sum) {
+                    if (!sum.error) {
+                        try {
+                            sum.result = math.add(sum.result, expression.result);
+                            scope[sum.variable] = sum.result;
+                        } catch (e) {
+                            sum.error = 'Error: Sum can not be calculated';
+                        }
+                    }
+                });
+            }
         }.bind(this));
-
-        _.remove(this.expressions, { line: null });
 
         this.repaint();
     };
@@ -124,13 +186,22 @@
                 }
             } else if (expression.result === undefined) {
                 var type = 'empty';
+
+                for (var i = index; i < this.lines.length; i++) {
+                    if (this.expressions[i].result !== undefined) {
+                        expression.tab = this.expressions[i].tab;
+                        break;
+                    }
+                }
             } else {
                 var type = 'result';
             }
 
             var prefix = '';
             for (var s = 0; s <= expression.code.length; s++) prefix += ' ';
-            if (type === 'empty') prefix += ' ';
+            if (type === 'empty') for (var t = 0; t <= expression.tab; t++) prefix += '  ';
+            for (var i = 0; i < expression.tab; i++) prefix = prefix.replace(/(\| )?  /, '$1| ');
+
             if (type === 'result') {
                 if (expression.result instanceof Function) {
                     prefix += 'fn';
@@ -162,44 +233,6 @@
         }.bind(this));
 
         this.outputEl.innerHTML = html;
-    };
-
-
-    function Expression(code, scope) {
-        this.code = code;
-        this.scopeInput = scopeClone(scope);
-        this.scopeOutput = scopeClone(this.scopeInput);
-
-        try {
-            this.parse = math.parse(code);
-
-            this.dependencies = [];
-            this.parse.traverse(function (node) {
-                if (node.isSymbolNode || node.isFunctionNode) {
-                    this.dependencies.push(node.name);
-                }
-            }.bind(this));
-
-            this.eval(scope);
-        } catch (e) {
-            this.result = null;
-            this.error = e;
-        }
-
-        this.line = null;
-    };
-
-    Expression.prototype.eval = function (scope) {
-        this.scopeInput = scopeClone(scope);
-        this.scopeOutput = scopeClone(this.scopeInput);
-
-        try {
-            this.result = this.parse.eval(this.scopeOutput);
-            this.error = null;
-        } catch (e) {
-            this.result = null;
-            this.error = e;
-        }
     };
 
     window.Calque = Calque;
