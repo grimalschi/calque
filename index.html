@@ -8,12 +8,22 @@
     <script src="math.min.js"></script>
     <script src="calque.js"></script>
     <script>
+        function save () {
+            window.localStorage.calque = input.value;
+        }
+        function load () {
+            input.value = window.localStorage.calque;
+        }
+    
         window.onload = function () {
             var input = document.getElementById('input');
             var output = document.getElementById('output');
             window.calque = new Calque(input, output);
             input.focus();
+            load();
         }
+        
+        window.onbeforeunload = save();
     </script>
 </head>
 <body>
