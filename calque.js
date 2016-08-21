@@ -120,7 +120,7 @@
 
             if (expression.processed.trim().slice(-1) === ':') {
                 var name = expression.processed.trim().slice(0, -1).trim();
-                expression.variable = name.replace(/ /g, '_');
+                expression.variable = translit(name.replace(/ /g, '_'));
 
                 spacevars.splice(0, 0, {
                     original: name,
