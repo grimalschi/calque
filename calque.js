@@ -44,18 +44,13 @@
         var selectionStart = this.inputEl.selectionStart;
 
         var match = value.substr(0, selectionStart).match(/\n/g);
-
-        if (!match) {
-            var activeLine = 1;
-        } else {
-            var activeLine = value.substr(0, selectionStart).match(/\n/g).length + 1;
-        }
+        var activeLine = match ? value.substr(0, selectionStart).match(/\n/g).length + 1 : 1;
 
         if (this.activeLine !== activeLine) {
             this.activeLine = activeLine;
             this.repaint();
         }
-    }
+    };
 
     Calque.prototype.input = function () {
         var raw = this.inputEl.value;
@@ -64,7 +59,7 @@
             this.lines = this.raw.split("\n");
             this.recalc();
         }
-    }
+    };
 
     Calque.prototype.recalc = function () {
         this.expressions = [];
@@ -197,9 +192,9 @@
                 var type = 'result';
             }
 
-            var prefix = '';
-            for (var s = 0; s <= expression.code.length; s++) prefix += ' ';
-            if (type === 'empty') for (var t = 0; t <= expression.tab; t++) prefix += '  ';
+            var code = expression.code;
+            var prefix = ' ';
+            if (type === 'empty') for (var t = 0; t <= expression.tab; t++) code += '  ';
             for (var i = 0; i < expression.tab; i++) prefix = prefix.replace(/(\| )?  /, '$1| ');
 
             if (type === 'result') {
@@ -225,8 +220,8 @@
             if (type === 'error') data = expression.error;
 
             var lineHtml = '<div class="' + type + '">';
-            lineHtml += '<span class="prefix" data-prefix="' + prefix + '"></span>';
-            lineHtml += '<span class="data">' + data + '</span>';
+            lineHtml += '<span class="code" data-code="' + code + '"></span>';
+            lineHtml += '<span class="hint" data-prefix="' + prefix + '">' + data + '</span>';
             lineHtml += '</div>';
 
             html += lineHtml;

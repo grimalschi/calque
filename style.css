@@ -23,7 +23,7 @@ body {
     line-height: 1.5;
     padding: 20px;
     box-sizing: border-box;
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 .interface .input {
@@ -42,14 +42,20 @@ body {
     display: block;
 }
 
-.interface .output .prefix:before {
-    content: attr(data-prefix);
-    color: #E9E9E9;
+.interface .output .code:before {
+    content: attr(data-code);
+    color: transparent;
 }
 
-.interface .output .data {
+.interface .output .hint:before {
+    content: attr(data-prefix);
+    color: #E9E9E9;
+    white-space: pre;
+}
+
+.interface .output .hint {
     z-index: 1;
-    position: relative;
+    position: absolute;
 }
 
 .interface .output .result {
