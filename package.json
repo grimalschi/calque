@@ -1,0 +1,43 @@
+{
+  "name": "calque",
+  "version": "0.0.1",
+  "main": "index.html",
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/grimalschi/calque.git"
+  },
+
+  "bugs": {
+    "url": "https://github.com/grimalschi/calque/issues"
+  },
+
+  "author": "Veaceslav Grimalschi",
+  "license": "MIT",
+  "homepage": "https://github.com/grimalschi/calque",
+
+  "window": {
+    "title": "calque",
+    "icon": "favicon.png",
+    "width": 800,
+    "height": 450,
+    "min_width": 800,
+    "min_height": 450,
+    "toolbar": false
+  },
+
+  "chromium-args": "--child-clean-exit",
+
+  "dependencies": {
+    "gulp-util": "^3.0.6",
+    "gulp": "^3.9.0",
+    "gulp-zip": "^3.0.2",
+    "nw": "^0.12.3",
+    "nw-builder": "^2.0.2"
+  },
+  "devDependencies": {}
+}
