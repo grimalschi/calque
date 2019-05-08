@@ -49,10 +49,7 @@
 
                 var selection = calque.raw.substring(selectionStart, selectionEnd);
 
-                // TODO нормальный isnumeric сделать
-                // не умеет работать с -2 и тд
-                // вынести в calque.replaceSelection
-                if (selection * 1 > 0) {
+                if (selection.match(/-?\d+\.?\d*/)) {
                     var newValue = selection * 1;
 
                     if (event.key === 'ArrowUp') newValue += event.shiftKey ? 10 : 1;
@@ -138,7 +135,7 @@
                 }
             });
 
-            if (line.code.trim().slice(-1) === ':') {
+            if (line.code.trim().slice(-1) === ':' && line.code.indexOf('#') < 0) {
                 line.summing = line.code.trim().slice(0, -1).trim();
                 line.result = 0;
                 line.closed = false;
