@@ -49,7 +49,7 @@
 
                 var selection = calque.raw.substring(selectionStart, selectionEnd);
 
-                if (selection.match(/-?\d+\.?\d*/)) {
+                if (selection.match(/^-?\d+\.?\d*$/)) {
                     var newValue = selection * 1;
 
                     if (event.key === 'ArrowUp') newValue += event.shiftKey ? 10 : 1;
