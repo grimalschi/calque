@@ -1,223 +1,362 @@
 (function () {
-    function translit(text){
-        return text.replace(/[а-яА-Я]/g, function (match) {
-            return '_x' + match.charCodeAt() + 'x_';
-        });
-    }
-
-    function detranslit(text) {
-        return text.replace(/_x(\d+)x_/g, function (match, code) {
-            return String.fromCharCode(code);
-        });
-    }
-
     function Calque(inputEl, outputEl) {
-        this.inputEl = inputEl;
-        this.outputEl = outputEl;
-        this.parentEl = inputEl.parentNode;
+        var calque = this;
 
-        this.raw = '';
-        this.lines = [];
-        this.expressions = [];
-        this.activeLine = 0;
+        calque.inputEl = inputEl;
+        calque.outputEl = outputEl;
+        calque.parentEl = inputEl.parentNode;
 
-        var handler = function () {
-            this.updateActiveLine();
-            this.input();
-            this.inputEl.style.height = Math.max(
-                this.outputEl.clientHeight,
-                this.parentEl.clientHeight
-            ) + 'px';
-        }.bind(this);
+        calque.raw = '';
+        calque.lines = [];
+        calque.cache = {};
+
+        calque.selection = '';
+        calque.selectionStart = 0;
+        calque.selectionEnd = 0;
+
+        var last = 0;
+        var handler = function (delayed) {
+            if (last === Date.now()) return;
+            else last = Date.now();
+
+            calque.input();
+            calque.inputEl.style.height = Math.max(calque.outputEl.clientHeight, calque.parentEl.clientHeight) + 'px';
+        };
 
         handler();
 
-        this.inputEl.onkeydown = handler;
-        this.inputEl.onkeyup = handler;
-        setInterval(handler, 50);
+        calque.inputEl.oninput = handler;
 
-        this.outputEl.scrollTop = this.inputEl.scrollTop;
+        calque.inputEl.onmousedown = function () {
+            window.requestAnimationFrame(handler);
+        };
+
+        calque.inputEl.onkeydown = function (event) {
+            if (event.key === 'Enter') {
+
+            }
+
+            if (event.metaKey || event.ctrlKey) {
+                if (event.key === 'd' || event.key === 'в') {
+                    calque.duplicateSelection();
+                    event.preventDefault();
+                }
+            }
+
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                var selectionStart = calque.inputEl.selectionStart;
+                var selectionEnd = calque.inputEl.selectionEnd;
+
+                var selection = calque.raw.substring(selectionStart, selectionEnd);
+
+                // TODO нормальный isnumeric сделать
+                // не умеет работать с -2 и тд
+                // вынести в calque.replaceSelection
+                if (selection * 1 > 0) {
+                    var newValue = selection * 1;
+
+                    if (event.key === 'ArrowUp') newValue += event.shiftKey ? 10 : 1;
+                    if (event.key === 'ArrowDown') newValue -= event.shiftKey ? 10 : 1;
+
+                    calque.replaceSelection(newValue);
+                    event.preventDefault();
+                }
+            }
+
+            if (event.key === 'Tab') {
+                if (event.shiftKey) {
+                    calque.removeIndent();
+                } else {
+                    calque.addIndent();
+                }
+
+                event.preventDefault();
+            }
+
+            window.requestAnimationFrame(handler);
+        };
+
+        setTimeout(function fn() {
+            setTimeout(fn, 50);
+            handler();
+        });
+
+        calque.outputEl.scrollTop = calque.inputEl.scrollTop;
     }
 
-    Calque.prototype.updateActiveLine = function () {
-        var value = this.inputEl.value;
-        var selectionStart = this.inputEl.selectionStart;
-
-        var match = value.substr(0, selectionStart).match(/\n/g);
-        var activeLine = match ? value.substr(0, selectionStart).match(/\n/g).length + 1 : 1;
-
-        if (this.activeLine !== activeLine) {
-            this.activeLine = activeLine;
-            this.repaint();
-        }
-    };
-
     Calque.prototype.input = function () {
-        var raw = this.inputEl.value;
-        if (raw !== this.raw) {
-            this.raw = raw;
-            this.lines = this.raw.split("\n");
-            this.recalc();
+        var calque = this;
+
+        var raw = calque.inputEl.value;
+        if (raw !== calque.raw) {
+            calque.raw = raw;
+            calque.recalc();
+
+            localStorage.setItem("input", calque.raw);
         }
+
+        calque.readSelection();
+
+        calque.repaint();
     };
 
     Calque.prototype.recalc = function () {
-        this.expressions = [];
+        var calque = this;
 
-        var spacevars = [];
-
-        var sums = [];
+        calque.lines = [];
 
         var scope = {
             last: null
         };
 
-        this.lines.forEach(function (code, index) {
-            var expression = {
-                line: index,
+        var position = 0;
+        calque.raw.split("\n").forEach(function (code, index) {
+            var line = {
+                index: index,
                 code: code,
-                processed: code,
+                positionStart: position,
+                positionEnd: position + code.length,
                 result: null,
                 error: null,
+                indent: 0,
+                summing: null,
+                closed: false,
+            };
+
+            position += code.length + 1;
+
+            calque.lines.push(line);
+
+            if (line.code.substr(0, 2) === '  ') {
+                line.indent = line.code.match(/\s+/)[0].match(/\s\s/g).length;
             }
 
-            this.expressions.push(expression);
-
-            if (expression.code.substr(0, 2) === '  ') {
-                expression.tab = expression.code.match(/\s+/)[0].match(/\s{2}/g).length;
-            } else {
-                expression.tab = 0;
-            }
-
-            if (expression.code.trim() !== '' && expression.tab < sums.length) {
-                var closed = sums.splice(expression.tab);
-            }
-
-            if (expression.processed.indexOf('=') > 0) {
-                var names = [];
-
-                expression.processed.split('=').slice(0, -1).forEach(function (part) {
-                    if (expression.processed.indexOf('(') > 0) {
-                        names.push(part.substr(0, part.indexOf('(')).trim());
-                    } else {
-                        names.push(part.trim());
-                    }
-                });
-
-                names.forEach(function (name) {
-                    spacevars.splice(0, 0, {
-                        original: name,
-                        replaced: name.replace(/ /g, '_'),
-                        regexp: new RegExp(name, 'g')
-                    });
-                });
-            }
-
-            if (expression.processed.trim().slice(-1) === ':') {
-                var name = expression.processed.trim().slice(0, -1).trim();
-                expression.variable = translit(name.replace(/ /g, '_'));
-
-                spacevars.splice(0, 0, {
-                    original: name,
-                    replaced: name.replace(/ /g, '_'),
-                    regexp: new RegExp(name, 'g')
-                });
-
-                if (expression.tab === sums.length) {
-                    sums.push(expression);
-                } else {
-                    expression.error = 'Error: Unexpected indent';
+            calque.lines.forEach(function (line2) {
+                if (line2.summing && line2.indent >= line.indent) {
+                    line2.closed = true;
+                    scope[line2.summing] = line2.result;
                 }
-
-                expression.processed = name + ' = 0';
-            }
-
-            spacevars.forEach(function (spacevar) {
-                expression.processed = expression.processed.replace(spacevar.regexp, spacevar.replaced);
             });
 
-            expression.processed = translit(expression.processed);
+            if (line.code.trim().slice(-1) === ':') {
+                line.summing = line.code.trim().slice(0, -1).trim();
+                line.result = 0;
+                line.closed = false;
+            } else {
+                try {
+                    var cached = calque.cache[line.code];
+                    if (!cached) {
+                        cached = {};
+                        calque.cache[line.code] = cached;
+                        cached.parsed = math.parse(line.code);
+                        cached.compiled = cached.parsed.compile();
+                    }
 
-            try {
-                expression.result = math.eval(expression.processed, scope);
-            } catch (e) {
-                expression.error = detranslit(e.toString());
+                    line.parsed = cached.parsed;
+                    line.compiled = cached.compiled;
+                    line.result = line.compiled.eval(scope);
+                } catch (e) {
+                    line.error = e.toString();
+                }
             }
 
-            if (expression.result !== undefined) {
-                scope.last = expression.result;
-            }
-
-            if (sums.length && expression.result && !expression.error) {
-                sums.forEach(function (sum) {
-                    if (!sum.error) {
+            if (line.result !== undefined) {
+                calque.lines.forEach(function (line2) {
+                    if (line2.summing && !line2.closed && line2.indent < line.indent) {
                         try {
-                            sum.result = math.add(sum.result, expression.result);
-                            scope[sum.variable] = sum.result;
+                            line2.result = math.add(line2.result, line.result);
                         } catch (e) {
-                            sum.error = 'Error: Sum can not be calculated';
+                            line2.error = e.toString();
                         }
                     }
                 });
-            }
-        }.bind(this));
 
-        this.repaint();
+                scope.last = line.result;
+            }
+        });
+    };
+
+    Calque.prototype.readActiveLine = function () {
+        var calque = this;
+
+        var value = calque.inputEl.value;
+        var selectionStart = calque.inputEl.selectionStart;
+
+        var match = value.substr(0, selectionStart).match(/\n/g);
+        var index = match ? match.length : 0;
+        calque.line = calque.lines[index];
+    };
+
+    Calque.prototype.readSelection = function () {
+        var calque = this;
+
+        calque.selectionStart = calque.inputEl.selectionStart;
+        calque.selectionEnd = calque.inputEl.selectionEnd;
+
+        calque.selection = calque.raw.substring(calque.selectionStart, calque.selectionEnd);
+
+        calque.lines.forEach(function (line) {
+            line.selected = false;
+
+            var leftCheck = line.positionEnd >= calque.selectionStart;
+            var rightCheck = line.positionStart <= calque.selectionEnd;
+            if (leftCheck && rightCheck) line.selected = true;
+        });
+    };
+
+    Calque.prototype.replaceSelection = function (replacement) {
+        var calque = this;
+
+        calque.readSelection();
+
+        replacement = replacement.toString();
+
+        var newSelectionStart = calque.selectionStart;
+        var newSelectionEnd = calque.selectionStart + replacement.length;
+
+        if (!document.execCommand('insertText', false, replacement)) {
+            calque.inputEl.setRangeText(replacement, calque.selectionStart, calque.selectionEnd, 'end');
+            calque.input();
+        }
+
+        calque.inputEl.setSelectionRange(newSelectionStart, newSelectionEnd);
+    };
+
+    Calque.prototype.duplicateSelection = function () {
+        var calque = this;
+
+        if (calque.selection === '') {
+            var line = calque.lines.find(function (line) {
+                return line.selected;
+            });
+
+            calque.inputEl.setSelectionRange(line.positionEnd, line.positionEnd);
+            calque.replaceSelection('\n' + line.code);
+            calque.inputEl.setSelectionRange(calque.selectionStart, calque.selectionStart);
+         } else {
+            var selection = calque.selection;
+
+            calque.inputEl.setSelectionRange(calque.selectionEnd, calque.selectionEnd);
+            calque.replaceSelection(selection);
+            calque.inputEl.setSelectionRange(calque.selectionStart - selection.length, calque.selectionStart);
+        }
+    };
+
+    Calque.prototype.addIndent = function () {
+        var calque = this;
+
+        var selectionStart = Infinity;
+        var selectionEnd = 0;
+
+        var affected = 0;
+        var replacement = '';
+
+        calque.lines.forEach(function (line) {
+            if (!line.selected) return false;
+
+            affected++;
+            replacement += '  ' + line.code + '\n';
+
+            if (line.positionStart <= selectionStart) {
+                selectionStart = line.positionStart;
+            }
+
+            if (line.positionEnd > selectionEnd) {
+                selectionEnd = line.positionEnd;
+            }
+        });
+
+        if (affected === 0) return;
+
+        replacement = replacement.substr(0, replacement.length - 1);
+
+        var newSelectionStart = calque.selectionStart + 2;
+        var newSelectionEnd = calque.selectionEnd + affected * 2;
+
+        calque.inputEl.setSelectionRange(selectionStart, selectionEnd);
+        calque.replaceSelection(replacement);
+        calque.inputEl.setSelectionRange(newSelectionStart, newSelectionEnd);
+    };
+
+    Calque.prototype.removeIndent = function () {
+        var calque = this;
+
+        var selectionStart = Infinity;
+        var selectionEnd = 0;
+
+        var affected = 0;
+        var replacement = '';
+
+        calque.lines.forEach(function (line) {
+            if (!line.selected) return false;
+            if (line.code.substr(0, 2) !== '  ') return;
+
+            affected++;
+            replacement += line.code.substr(2) + '\n';
+
+            if (line.positionStart <= selectionStart) {
+                selectionStart = line.positionStart;
+            }
+
+            if (line.positionEnd > selectionEnd) {
+                selectionEnd = line.positionEnd;
+            }
+        });
+
+        if (affected === 0) return;
+
+        replacement = replacement.substr(0, replacement.length - 1);
+
+        var newSelectionStart = calque.selectionStart - 2;
+        var newSelectionEnd = calque.selectionEnd - affected * 2;
+
+        calque.inputEl.setSelectionRange(selectionStart, selectionEnd);
+        calque.replaceSelection(replacement);
+        calque.inputEl.setSelectionRange(newSelectionStart, newSelectionEnd);
     };
 
     Calque.prototype.repaint = function () {
+        var calque = this;
+
         var html = '';
 
-        this.lines.forEach(function (line, index) {
-            var expression = this.expressions.filter(function (expression) {
-                return expression.line === index;
-            })[0];
-
-            if (expression.error) {
-                if (this.activeLine === index + 1) {
+        calque.lines.forEach(function (line, index) {
+            if (line.code === '' && line.selected) {
+                var type = 'help';
+            } else if (line.error) {
+                if (line.selected) {
                     var type = 'empty';
                 } else {
                     var type = 'error';
                 }
-            } else if (expression.result === undefined) {
+            } else if (line.summing) {
+                var type = 'result';
+            } else if (line.result === undefined) {
                 var type = 'empty';
-
-                for (var i = index; i < this.lines.length; i++) {
-                    if (this.expressions[i].result !== undefined) {
-                        expression.tab = this.expressions[i].tab;
-                        break;
-                    }
-                }
+            } else if (line.parsed.isFunctionAssignmentNode) {
+                var type = 'empty';
+            } else if (line.parsed.isConstantNode) {
+                var type = 'empty';
+            } else if (line.parsed.isAssignmentNode && line.parsed.value.isConstantNode) {
+                var type = 'empty';
             } else {
                 var type = 'result';
             }
 
-            var code = expression.code;
+            var code = line.code || ' ';
             var prefix = ' ';
-            if (type === 'empty') for (var t = 0; t <= expression.tab; t++) code += '  ';
-            for (var i = 0; i < expression.tab; i++) prefix = prefix.replace(/(\| )?  /, '$1| ');
+            for (var i = 0; i < line.indent; i++) code = code.replace(/(\| )?  /, '$1| ');
 
-            if (type === 'result') {
-                if (expression.result instanceof Function) {
-                    prefix += 'fn';
-                } else {
-                    prefix += '= ';
-                }
-            }
-            if (type === 'error') prefix += '// ';
+            if (type === 'result') prefix += '= ';
+            else if (type === 'error') prefix += '// ';
+            else if (type === 'help') prefix += '// ';
 
             var data = '';
-            if (type === 'result') {
-                if (expression.result === null) {
-                    data = 'null';
-                } else if (expression.result instanceof Function) {
-                    var source = expression.result.toString();
-                    data = '';
-                } else {
-                    data = expression.result.toString();
-                }
-            };
-            if (type === 'error') data = expression.error;
+            if (type === 'result') data = line.result.toString();
+            else if (type === 'error') data = line.error;
+            else if (type === 'help') data = 'Type ? for help'
+
+            if (line.selected) type += ' highlight';
 
             var lineHtml = '<div class="' + type + '">';
             lineHtml += '<span class="code" data-code="' + code + '"></span>';
@@ -225,9 +364,9 @@
             lineHtml += '</div>';
 
             html += lineHtml;
-        }.bind(this));
+        });
 
-        this.outputEl.innerHTML = html;
+        calque.outputEl.innerHTML = html;
     };
 
     window.Calque = Calque;

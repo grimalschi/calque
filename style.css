@@ -18,10 +18,9 @@ body {
     right: 0;
     left: 0;
     width: 100%;
-    font-family: monospace;
+    font-family: 'Menlo', 'Monaco', courier, monospace;
     font-size: 16px;
     line-height: 1.5;
-    padding: 20px;
     box-sizing: border-box;
     white-space: pre-wrap;
 }
@@ -32,19 +31,29 @@ body {
     outline: none;
     background: none;
     resize: none;
+    padding: 20px;
 }
 
 .interface .output {
     overflow: hidden;
+    padding: 20px 0;
 }
 
 .interface .output div {
     display: block;
+    padding: 0 20px;
+}
+
+.interface .output div.highlight {
+    background-color: #f9f9f9;
+}
+
+.interface .output .code {
+    color: #E9E9E9;
 }
 
 .interface .output .code:before {
     content: attr(data-code);
-    color: transparent;
 }
 
 .interface .output .hint:before {
@@ -56,6 +65,11 @@ body {
 .interface .output .hint {
     z-index: 1;
     position: absolute;
+    white-space: pre;
+}
+
+.interface .output .help {
+    color: silver;
 }
 
 .interface .output .result {

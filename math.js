@@ -7,7 +7,7 @@
  * mathematical functions, and a flexible expression parser.
  *
  * @version 5.9.0
- * @date    2019-04-08
+ * @date    2019-05-08
  *
  * @license
  * Copyright (C) 2013-2019 Jos de Jong <wjosdejong@gmail.com>
@@ -7525,7 +7525,7 @@ function factory(type, config, load, typed) {
 
 
   parse.isAlpha = function isAlpha(c, cPrev, cNext) {
-    return parse.isValidLatinOrGreek(c) || parse.isValidMathSymbol(c, cNext) || parse.isValidMathSymbol(cPrev, c);
+    return parse.isValidLatinOrGreekOrCyrillic(c) || parse.isValidMathSymbol(c, cNext) || parse.isValidMathSymbol(cPrev, c);
   };
   /**
    * Test whether a character is a valid latin, greek, or letter-like character
@@ -7534,8 +7534,8 @@ function factory(type, config, load, typed) {
    */
 
 
-  parse.isValidLatinOrGreek = function isValidLatinOrGreek(c) {
-    return /^[a-zA-Z_$\u00C0-\u02AF\u0370-\u03FF\u2100-\u214F]$/.test(c);
+  parse.isValidLatinOrGreekOrCyrillic = function isValidLatinOrGreekOrCyrillic(c) {
+    return /^[a-zA-Z_$\u00C0-\u02AF\u0370-\u03FF\u2100-\u214F\u0400-\u04FF]$/.test(c);
   };
   /**
    * Test whether two given 16 bit characters form a surrogate pair of a
@@ -8095,21 +8095,32 @@ function factory(type, config, load, typed) {
 
 
   function parseImplicitMultiplication(state) {
-    var node, last;
+    var node, last, previous;
     node = parseRule2(state);
     last = node;
+    previous = last;
 
     while (true) {
       if (state.tokenType === TOKENTYPE.SYMBOL || state.token === 'in' && type.isConstantNode(node) || state.tokenType === TOKENTYPE.NUMBER && !type.isConstantNode(last) && (!type.isOperatorNode(last) || last.op === '!') || state.token === '(') {
         // parse implicit multiplication
         //
-        // symbol:      implicit multiplication like '2a', '(2+3)a', 'a b'
+        // symbol:      implicit multiplication like '2a', '(2+3)a'
         // number:      implicit multiplication like '(2+3)2'
         // parenthesis: implicit multiplication like '2(3+4)', '(3+4)(1+2)'
+        //
+        // or join space separated symbols like 'a b' and 'a 1'
         last = parseRule2(state);
-        node = new OperatorNode('*', 'multiply', [node, last], true
-        /* implicit */
-        );
+
+        if (previous instanceof SymbolNode && previous.name !== 'i' && last instanceof SymbolNode && last.name !== 'i') {
+          previous.name += ' ' + last.name;
+        } else if (previous instanceof SymbolNode && previous.name !== 'i' && last instanceof ConstantNode) {
+          previous.name += ' ' + last.value;
+        } else {
+          node = new OperatorNode('*', 'multiply', [node, last], true
+          /* implicit */
+          );
+          previous = last;
+        }
       } else {
         break;
       }
@@ -31864,7 +31875,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
       throw new Error('Cannot convert from ' + from + ' to ' + type);
     }
-
+    
     /**
      * Stringify parameters in a normalized way
      * @param {Param[]} params

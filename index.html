@@ -10,6 +10,10 @@
     <script>
         window.onload = function () {
             var input = document.getElementById('input');
+            if (localStorage.getItem("input")) {
+                input.value = localStorage.getItem("input");
+            }
+
             var output = document.getElementById('output');
             window.calque = new Calque(input, output);
             input.focus();
@@ -32,7 +36,7 @@ a = 25
 b = a * 2
 postal code = 1122
 
-# Expression trees
+# Summing lists
 animals:
   cats = 2
   dogs = 3
@@ -50,8 +54,17 @@ pow2(6)
 2 * 2
 last + 1
 
-# Calque on GitHub: https://github.com/grimalschi/calque
-# Using Math.js: https://github.com/josdejong/mathjs</textarea>
+# Keys
+# Duplicate line or selection: Ctrl+D
+# Change selected number: Up/Down
+# Change selected number 10x: Shift+Up/Down
+# Change indent: Tab/Shift+Tab
+
+# Calque on GitHub:
+# https://github.com/grimalschi/calque
+
+# Using Math.js:
+# https://github.com/grimalschi/mathjs</textarea>
     </div>
     <a href="https://github.com/grimalschi/calque"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
 </body>
