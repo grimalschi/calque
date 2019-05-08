@@ -33,9 +33,7 @@
 
         calque.inputEl.onkeydown = function (event) {
             if (event.key === 'Enter') {
-                var line = calque.lines.filter(function (line) {
-                    return line.selected;
-                }).pop();
+                var line = calque.lines.filter(line =>  line.selected).pop();
 
                 var insert = '\n';
                 if (line.summing) insert += '  ';
@@ -148,6 +146,7 @@
                 line.summing = line.code.trim().slice(0, -1).trim();
                 line.result = 0;
                 line.closed = false;
+                line.children = [];
             } else {
                 try {
                     var cached = calque.cache[line.code];
@@ -169,6 +168,8 @@
             if (line.result !== undefined) {
                 calque.lines.forEach(function (line2) {
                     if (line2.summing && !line2.closed && line2.indent < line.indent) {
+                        line2.children.push(line);
+
                         try {
                             line2.result = math.add(line2.result, line.result);
                         } catch (e) {
@@ -336,7 +337,11 @@
                 if (line.selected) {
                     var type = 'empty';
                 } else {
-                    var type = 'error';
+                    if (line.summing && line.children.find(line => line.error)) {
+                        var type = 'empty';
+                    } else {
+                        var type = 'error';
+                    }
                 }
             } else if (line.summing) {
                 var type = 'result';
