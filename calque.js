@@ -363,6 +363,8 @@
             if (type === 'result') data = line.result.toString();
             else if (type === 'error') data = line.error;
 
+            data = data.replace(/\n/g, '\\n');
+
             if (line.selected) type += ' highlight';
 
             var lineHtml = '<div class="' + type + '">';
