@@ -33,7 +33,16 @@
 
         calque.inputEl.onkeydown = function (event) {
             if (event.key === 'Enter') {
+                var line = calque.lines.filter(function (line) {
+                    return line.selected;
+                }).pop();
 
+                var insert = '\n';
+                if (line.summing) insert += '  ';
+                for (var i = 0; i < line.indent; i++) insert += '  ';
+
+                calque.replaceSelection(insert, false);
+                event.preventDefault();
             }
 
             if (event.metaKey || event.ctrlKey) {
@@ -201,11 +210,12 @@
         });
     };
 
-    Calque.prototype.replaceSelection = function (replacement) {
+    Calque.prototype.replaceSelection = function (replacement, select) {
         var calque = this;
 
         calque.readSelection();
 
+        select = select === false ? false : true;
         replacement = replacement.toString();
 
         var newSelectionStart = calque.selectionStart;
@@ -216,7 +226,11 @@
             calque.input();
         }
 
-        calque.inputEl.setSelectionRange(newSelectionStart, newSelectionEnd);
+        if (select) {
+            calque.inputEl.setSelectionRange(newSelectionStart, newSelectionEnd);
+        } else {
+            calque.inputEl.setSelectionRange(newSelectionEnd, newSelectionEnd);
+        }
     };
 
     Calque.prototype.duplicateSelection = function () {
