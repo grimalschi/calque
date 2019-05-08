@@ -321,9 +321,7 @@
         var html = '';
 
         calque.lines.forEach(function (line, index) {
-            if (line.code === '' && line.selected) {
-                var type = 'help';
-            } else if (line.error) {
+            if (line.error) {
                 if (line.selected) {
                     var type = 'empty';
                 } else {
@@ -349,12 +347,10 @@
 
             if (type === 'result') prefix += '= ';
             else if (type === 'error') prefix += '// ';
-            else if (type === 'help') prefix += '// ';
 
             var data = '';
             if (type === 'result') data = line.result.toString();
             else if (type === 'error') data = line.error;
-            else if (type === 'help') data = 'Type ? for help'
 
             if (line.selected) type += ' highlight';
 
