@@ -92,16 +92,16 @@
         var calque = this;
 
         var raw = calque.inputEl.value;
-        if (raw !== calque.raw) {
+        var selectionStart = calque.inputEl.selectionStart;
+        var selectionEnd = calque.inputEl.selectionEnd;
+        if (raw !== calque.raw || selectionStart !== calque.selectionStart || selectionEnd !== calque.selectionEnd) {
             calque.raw = raw;
             calque.recalc();
+            calque.readSelection();
+            calque.repaint();
 
             localStorage.setItem("input", calque.raw);
         }
-
-        calque.readSelection();
-
-        calque.repaint();
     };
 
     Calque.prototype.recalc = function () {
