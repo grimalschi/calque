@@ -23,6 +23,7 @@ body {
     line-height: 1.5;
     box-sizing: border-box;
     white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .interface .input {
