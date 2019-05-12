@@ -18,6 +18,8 @@ body {
     right: 0;
     left: 0;
     width: 100%;
+    border: none;
+    margin: 0;
     font-family: 'Menlo', 'Monaco', courier, monospace;
     font-size: 16px;
     line-height: 1.5;
@@ -28,7 +30,6 @@ body {
 
 .interface .input {
     overflow: auto;
-    border: none;
     outline: none;
     background: none;
     resize: none;
