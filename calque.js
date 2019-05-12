@@ -365,7 +365,13 @@
             else if (type === 'error') prefix += '// ';
 
             var data = '';
-            if (type === 'result') data = line.result.toString();
+            if (type === 'result') {
+                if (typeof line.result === 'number') {
+                    data = math.round(line.result, 10).toString();
+                } else {
+                    data = line.result.toString();
+                }
+            }
             else if (type === 'error') data = line.error;
 
             data = data.replace(/\n/g, '\\n');
