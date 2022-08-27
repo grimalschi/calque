@@ -93,11 +93,11 @@ body {
     }
 
     .interface .output .code {
-        color: #424242;
+        color: #616161;
     }
 
     .interface .output .hint:before {
-        color: #424242;
+        color: #616161;
     }
 
     .interface .output .help {
