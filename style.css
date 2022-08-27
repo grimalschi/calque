@@ -81,3 +81,22 @@ body {
 .interface .output .error {
     color: red;
 }
+
+@media (prefers-color-scheme: dark) {
+    body, textarea {
+        background-color: #212121;
+        color: #EEEEEE;
+    }
+    
+    .interface .output div.highlight {
+        background-color: #424242;
+    }
+
+    .interface .output .help {
+        color: #757575;
+    }
+
+    .interface .output .result {
+        color: #757575;
+    }
+}
