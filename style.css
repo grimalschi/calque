@@ -92,6 +92,14 @@ body {
         background-color: #424242;
     }
 
+    .interface .output .code {
+        color: #424242;
+    }
+
+    .interface .output .hint:before {
+        color: #424242;
+    }
+
     .interface .output .help {
         color: #757575;
     }
