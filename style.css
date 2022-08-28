@@ -20,7 +20,7 @@ body {
     width: 100%;
     border: none;
     margin: 0;
-    font-family: 'Menlo', 'Monaco', courier, monospace;
+    font-family: 'Menlo', 'Monaco', 'Consolas', courier, monospace;
     font-size: 16px;
     line-height: 1.5;
     box-sizing: border-box;
@@ -80,4 +80,31 @@ body {
 
 .interface .output .error {
     color: red;
+}
+
+@media (prefers-color-scheme: dark) {
+    body, textarea {
+        background-color: #212121;
+        color: #EEEEEE;
+    }
+    
+    .interface .output div.highlight {
+        background-color: #424242;
+    }
+
+    .interface .output .code {
+        color: #616161;
+    }
+
+    .interface .output .hint:before {
+        color: #616161;
+    }
+
+    .interface .output .help {
+        color: #757575;
+    }
+
+    .interface .output .result {
+        color: #757575;
+    }
 }
