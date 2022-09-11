@@ -59,3 +59,5 @@ Change indent: Tab/Shift+Tab
 ## Using Math.js:
 
 https://github.com/grimalschi/mathjs
+
+Comments Added for Lab 06
