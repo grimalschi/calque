@@ -21,7 +21,7 @@ body {
     border: none;
     margin: 0;
     font-family: 'Menlo', 'Monaco', 'Consolas', courier, monospace;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5;
     box-sizing: border-box;
     white-space: pre-wrap;
@@ -47,11 +47,11 @@ body {
 }
 
 .interface .output div.highlight {
-    background-color: #f9f9f9;
+    background-color: #E4E4E4;
 }
 
 .interface .output .code {
-    color: #E9E9E9;
+    color: #B8C7D3;
 }
 
 .interface .output .code:before {
@@ -60,7 +60,7 @@ body {
 
 .interface .output .hint:before {
     content: attr(data-prefix);
-    color: #E9E9E9;
+    color: #B8C7D3;
     white-space: pre;
 }
 
@@ -71,11 +71,11 @@ body {
 }
 
 .interface .output .help {
-    color: silver;
+    color: #00AAC9;
 }
 
 .interface .output .result {
-    color: silver;
+    color: #00AAC9;
 }
 
 .interface .output .error {
@@ -84,27 +84,27 @@ body {
 
 @media (prefers-color-scheme: dark) {
     body, textarea {
-        background-color: #212121;
+        background-color: #2D2A2E;
         color: #EEEEEE;
     }
     
     .interface .output div.highlight {
-        background-color: #424242;
+        background-color: #242225;
     }
 
     .interface .output .code {
-        color: #616161;
+        color: #848088;
     }
 
     .interface .output .hint:before {
-        color: #616161;
+        color: #848088;
     }
 
     .interface .output .help {
-        color: #757575;
+        color: #8DCAD5;
     }
 
     .interface .output .result {
-        color: #757575;
+        color: #8DCAD5;
     }
 }
